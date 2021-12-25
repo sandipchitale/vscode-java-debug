@@ -101,6 +101,10 @@
         "title": "Pause Others"
       },
       {
+        "command": "java.debug.variables.showType",
+        "title": "Show Type"
+      },
+      {
         "command": "java.debug.variables.showHex",
         "title": "Show as Hex"
       },
@@ -299,6 +303,11 @@
         }
       ],
       "debug/variables/context": [
+        {
+          "command": "java.debug.variables.showType",
+          "when": "debugType == 'java'",
+          "group": "1_view@1"
+        },
         {
           "command": "java.debug.variables.showHex",
           "when": "debugType == 'java' && javadebug:showHex == 'off'",

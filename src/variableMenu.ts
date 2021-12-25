@@ -14,6 +14,8 @@ export function registerVariableMenuCommands(context: vscode.ExtensionContext): 
     updateContextKeys();
 
     context.subscriptions.push(instrumentOperationAsVsCodeCommand(
+        "java.debug.variables.showType", (variableNode: any) => showType(variableNode)));
+    context.subscriptions.push(instrumentOperationAsVsCodeCommand(
         "java.debug.variables.showHex", () => updateVariableFormatter("showHex", true)));
     context.subscriptions.push(instrumentOperationAsVsCodeCommand(
         "java.debug.variables.notShowHex", () => updateVariableFormatter("showHex", false)));
@@ -33,6 +35,41 @@ export function registerVariableMenuCommands(context: vscode.ExtensionContext): 
         "java.debug.variables.showToString", () => updateVariableFormatter("showToString", true)));
     context.subscriptions.push(instrumentOperationAsVsCodeCommand(
         "java.debug.variables.notShowToString", () => updateVariableFormatter("showToString", false)));
+}
+
+async function showType(variableNode: any) {
+    // const variableName = variableNode.variable.name;
+    let variableType = variableNode.variable.value;
+
+    // Remove object id
+    if ((/@[x0-9a-fA-F]*$/).test(variableType)) {
+        variableType = variableType.replace(/@.*$/, '')
+    }
+
+    //Remove array suffix
+    if ((/\[[x0-9a-fA-F]*\]$/).test(variableType)) {
+        variableType = variableType.replace(/\[.*$/, '')
+    }
+
+    const variableTypeParts = variableType.split('$');
+
+    if (variableTypeParts && variableTypeParts.length > 0) {
+
+        if (variableTypeParts.length > 1) {
+            variableType = await vscode.window.showQuickPick(variableTypeParts);
+        } else {
+            variableType = variableTypeParts[0];
+        }
+
+        if (variableType) {
+            // Convert to Simple Type name
+            variableType = variableType.replace(/^.*\./, '');
+
+            await vscode.env.clipboard.writeText(variableType);
+            await vscode.commands.executeCommand('workbench.action.showAllSymbols');
+            vscode.window.showInformationMessage(`Type '${variableType}' copied to clipboard. Paste it in command palette and type enter`);
+        }
+    }
 }
 
 function updateVariableFormatter(key: string, value: any) {
